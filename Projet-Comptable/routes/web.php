@@ -5,9 +5,16 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AchatController;
 
 
+/*
+|--------------------------------------------------------------------------
+| Accueil
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -30,54 +37,75 @@ Route::post('/register', [AuthController::class, 'store'])
 Route::get('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
-/*
-|--------------------------------------------------------------------------
-| Tableau de bord
-|--------------------------------------------------------------------------
-*/
-
-Route::view('/dashboard', 'dashboard.index')
-    ->name('dashboard');
 
 /*
 |--------------------------------------------------------------------------
-| Clients
+| UTILISATEURS CONNECTÉS
 |--------------------------------------------------------------------------
 */
 
-Route::view('/achats', 'achats.index')
-    ->name('achats.index');
+Route::middleware('check.auth')->group(function () {
 
-/*
-|--------------------------------------------------------------------------
-| Factures
-|--------------------------------------------------------------------------
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | Tableau de bord
+    |--------------------------------------------------------------------------
+    */
 
-Route::view('/factures', 'factures.index')
-    ->name('factures.index');
-
-/*
-|--------------------------------------------------------------------------
-| Paiements
-|--------------------------------------------------------------------------
-*/
-
-Route::view('/paiements', 'paiements.index')
-    ->name('paiements.index');
-
-/*
-|--------------------------------------------------------------------------
-| Utilisateurs
-|--------------------------------------------------------------------------
-*/
-
-Route::view('/utilisateurs', 'utilisateurs.index')
-    ->name('utilisateurs.index');
+    Route::view('/dashboard', 'dashboard.index')
+        ->name('dashboard');
 
 
-Route::get('/achats', [AchatController::class, 'index'])
-    ->name('achats.index');
+    /*
+    |--------------------------------------------------------------------------
+    | ACHATS
+    |--------------------------------------------------------------------------
+    */
 
-Route::post('/achats/upload', [AchatController::class, 'upload'])
-    ->name('achats.upload');
+    Route::get('/achats', [AchatController::class, 'index'])
+        ->name('achats.index');
+
+    Route::post('/achats/upload', [AchatController::class, 'upload'])
+        ->name('achats.upload');
+
+    Route::get('/achats/{id}', [AchatController::class, 'show'])
+        ->name('achats.show');
+
+    Route::get('/facture/preview/{id}', [AchatController::class, 'preview'])
+        ->name('facture.preview');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FACTURES
+    |--------------------------------------------------------------------------
+    */
+
+    Route::view('/factures', 'factures.index')
+        ->name('factures.index');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PAIEMENTS
+    |--------------------------------------------------------------------------
+    */
+
+    Route::view('/paiements', 'paiements.index')
+        ->name('paiements.index');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN UNIQUEMENT
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('admin')->group(function () {
+
+        Route::view('/utilisateurs', 'utilisateurs.index')
+            ->name('utilisateurs.index');
+
+    });
+
+});

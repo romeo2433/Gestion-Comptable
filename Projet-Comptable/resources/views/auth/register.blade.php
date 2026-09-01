@@ -78,6 +78,25 @@
                                 required>
 
                         </div>
+                        <div class="mb-3">
+
+                            <label class="form-label">Type de compte</label>
+                        
+                            <select name="role" class="form-select" required>
+                        
+                                <option value="">-- Choisir --</option>
+                        
+                                <option value="caissier">
+                                    Caissier
+                                </option>
+                        
+                                <option value="independant">
+                                    Utilisateur indépendant
+                                </option>
+                        
+                            </select>
+                        
+                        </div>
                         <button class="btn btn-success w-100">
                             S'inscrire
                         </button>

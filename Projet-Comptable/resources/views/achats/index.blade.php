@@ -90,18 +90,25 @@
 
         <div class="table-responsive">
 
+            @php
+                $estAdmin = session('role') === 'admin';
+            @endphp
+
             <table class="table table-hover align-middle">
 
                 <thead class="table-light">
                     <tr>
-                        <th>Facture</th>
                         <th>Date de facture</th>
                         <th>Nom du fournisseur</th>
                         <th>Compte de charge</th>
                         <th>Montant total (Ar)</th>
                         <th>TVA</th>
                         <th>Compte TVA</th>
-                        <th>Paiement</th>
+                        <th>Mode de paiement</th>
+                        @if($estAdmin)
+                            <th>Utilisateur</th>
+                        @endif
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
 
@@ -110,91 +117,121 @@
                     @forelse($achats as $achat)
 
                         <tr>
+
+                            {{-- DATE --}}
                             <td>
-                                @if($achat->fichier_facture)
-                            
-                                    <a href="{{ asset('storage/' . $achat->fichier_facture) }}"
-                                       target="_blank"
-                                       class="btn btn-sm btn-outline-primary">
-                            
-                                        <i class="bi bi-file-earmark-text"></i>
-                                        Voir
-                            
-                                    </a>
-                            
-                                @else
-                            
-                                    <span class="text-muted">
-                                        Aucun fichier
-                                    </span>
-                            
-                                @endif
+                                {{ $achat->date_facture
+                                    ? \Carbon\Carbon::parse($achat->date_facture)->format('d/m/Y')
+                                    : 'Non renseignée'
+                                }}
                             </td>
 
-                            <td>
-                                {{ \Carbon\Carbon::parse($achat->date_facture)->format('d/m/Y') }}
-                            </td>
-
+                            {{-- FOURNISSEUR --}}
                             <td>
                                 {{ $achat->nom_fournisseur ?? 'Non renseigné' }}
                             </td>
 
+                            {{-- COMPTE DE CHARGE --}}
                             <td>
                                 {{ $achat->compte_charge ?? 'Non renseigné' }}
                             </td>
 
+                            {{-- MONTANT TOTAL --}}
                             <td class="fw-semibold">
                                 {{ number_format($achat->montant_total, 0, ',', ' ') }} Ar
                             </td>
 
+                            {{-- TVA --}}
                             <td>
                                 {{ number_format($achat->tva, 0, ',', ' ') }} Ar
                             </td>
 
+                            {{-- COMPTE TVA --}}
                             <td>
                                 {{ $achat->compte_tva ?? 'Non renseigné' }}
                             </td>
 
+                           {{-- MODE DE PAIEMENT --}}
                             <td>
+
                                 @if($achat->paiement > 0)
+
                                     <span class="badge bg-success">
-                                        {{ number_format($achat->paiement, 0, ',', ' ') }} Ar
+                                        {{ $achat->mode_paiement ?? 'Non renseigné' }}
                                     </span>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-primary ms-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#paiementModal{{ $achat->id_facture }}"
+                                        title="Modifier le paiement">
+
+                                    </button>
+
                                 @else
+
                                     <span class="badge bg-warning text-dark">
                                         Non payé
                                     </span>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-success ms-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#paiementModal{{ $achat->id_facture }}"
+                                        title="Ajouter un paiement">
+
+                                        <i class="bi bi-plus"></i>
+
+                                    </button>
+
                                 @endif
+
                             </td>
 
+                            {{-- UTILISATEUR (admin uniquement) --}}
+                            @if($estAdmin)
+                                <td>
+                                    {{ $achat->nom_utilisateur ?? 'Non renseigné' }}
+                                </td>
+                            @endif
+
+                            {{-- ACTIONS --}}
+                            <td>
+
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    {{-- VOIR PLUS --}}
+                                    <a href="{{ route('achats.show', $achat->id_facture) }}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Voir les détails">
+
+                                        <i class="bi bi-eye"></i>
+                                        Voir plus
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
-
                     @empty
-
                         <tr>
-                            <td colspan="7"
+                            <td colspan="{{ $estAdmin ? 9 : 8 }}"
                                 class="text-center text-muted py-4">
                                 Aucun achat trouvé.
                             </td>
                         </tr>
-
                     @endforelse
-
                 </tbody>
-
             </table>
-
         </div>
-
     </div>
 
 </div>
 
 <script>
     function afficherNomFichier(input) {
-    
+
         const fileName = document.getElementById('file-name');
-    
+
         if (input.files.length > 0) {
             fileName.textContent = input.files[0].name;
         } else {

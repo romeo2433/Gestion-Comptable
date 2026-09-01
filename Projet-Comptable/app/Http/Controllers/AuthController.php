@@ -7,69 +7,180 @@ use App\Models\Utilisateur;
 
 class AuthController extends Controller
 {
-    // Afficher le formulaire de connexion
+    /*
+    |--------------------------------------------------------------------------
+    | Afficher la page de connexion
+    |--------------------------------------------------------------------------
+    */
     public function login()
     {
         return view('auth.login');
     }
 
-    // Afficher le formulaire d'inscription
+
+    /*
+    |--------------------------------------------------------------------------
+    | Afficher la page d'inscription
+    |--------------------------------------------------------------------------
+    */
     public function register()
     {
         return view('auth.register');
     }
 
-    // Inscription
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enregistrer un nouvel utilisateur
+    |--------------------------------------------------------------------------
+    */
     public function store(Request $request)
     {
         $request->validate([
-            'nom' => 'required',
+            'nom' => 'required|string|max:255',
             'email' => 'required|email|unique:utilisateurs,email',
-            'mot_de_passe' => 'required|min:4',
-            //'role' => 'required'
+            'mot_de_passe' => 'required|string|min:4',
+            'role' => 'required|in:caissier,independant',
         ]);
-
+    
         Utilisateur::create([
             'nom' => $request->nom,
             'email' => $request->email,
             'mot_de_passe' => $request->mot_de_passe,
-            'role' => 'caissier'
+            'role' => $request->role,
         ]);
-
-        return redirect()->route('login')
+    
+        return redirect()
+            ->route('login')
             ->with('success', 'Compte créé avec succès.');
     }
-
-    // Vérification de la connexion
+    /*
+    |--------------------------------------------------------------------------
+    | Connexion
+    |--------------------------------------------------------------------------
+    */
     public function authenticate(Request $request)
     {
+        // Validation
         $request->validate([
-            'email' => 'required',
-            'mot_de_passe' => 'required'
+            'email' => 'required|email',
+
+            'mot_de_passe' => 'required',
         ]);
 
-        $utilisateur = Utilisateur::where('email', $request->email)->first();
 
+        // Rechercher l'utilisateur avec son email
+        $utilisateur = Utilisateur::where(
+            'email',
+            $request->email
+        )->first();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Vérifier l'email
+        |--------------------------------------------------------------------------
+        */
         if (!$utilisateur) {
-            return back()->with('error', 'Email incorrect.');
+
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Email incorrect.');
         }
 
-        // Vérification sans Hash
+
+        /*
+        |--------------------------------------------------------------------------
+        | Vérifier le mot de passe
+        |--------------------------------------------------------------------------
+        |
+        | Pour le moment, nous gardons ton système sans Hash.
+        |
+        */
         if ($utilisateur->mot_de_passe != $request->mot_de_passe) {
-            return back()->with('error', 'Mot de passe incorrect.');
+
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Mot de passe incorrect.');
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Régénérer la session
+        |--------------------------------------------------------------------------
+        |
+        | Cela évite de conserver l'ancien identifiant de session
+        | après la connexion.
+        |
+        */
+        $request->session()->regenerate();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enregistrer les informations de l'utilisateur dans la session
+        |--------------------------------------------------------------------------
+        */
 
         session([
-            'utilisateur' => $utilisateur
+            'id_utilisateur' => $utilisateur->id_utilisateur,
+
+            'nom' => $utilisateur->nom,
+
+            'email' => $utilisateur->email,
+
+            'role' => $utilisateur->role,
         ]);
-        return redirect()->route('dashboard');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirection vers le tableau de bord
+        |--------------------------------------------------------------------------
+        */
+
+        return redirect()
+            ->route('dashboard');
     }
 
-    // Déconnexion
-    public function logout()
-    {
-        session()->forget('utilisateur');
 
-        return redirect()->route('login');
+    /*
+    |--------------------------------------------------------------------------
+    | Déconnexion
+    |--------------------------------------------------------------------------
+    */
+    public function logout(Request $request)
+    {
+        /*
+        | Supprimer les informations de l'utilisateur
+        | de la session.
+        */
+        $request->session()->forget([
+            'id_utilisateur',
+            'nom',
+            'email',
+            'role',
+        ]);
+
+
+        /*
+        | Invalider complètement la session.
+        */
+        $request->session()->invalidate();
+
+
+        /*
+        | Générer un nouveau token CSRF.
+        */
+        $request->session()->regenerateToken();
+
+
+        /*
+        | Retourner vers la page de connexion.
+        */
+        return redirect()
+            ->route('login')
+            ->with('success', 'Vous êtes déconnecté.');
     }
 }

@@ -1,82 +1,226 @@
+
 @extends('layouts.app')
 
-@section('title','Dashboard')
+@section('title', 'Dashboard')
 
-@section('page-title','Tableau de bord')
+@section('page-title', 'Tableau de bord')
 
 @section('content')
 
-<div class="row">
+<div class="container-fluid">
 
-    <div class="col-md-3">
+    {{-- Message de bienvenue --}}
+    <div class="mb-4">
 
-        <div class="card shadow-sm">
+        <h4>
+            Bienvenue, {{ session('nom') }}
+        </h4>
 
-            <div class="card-body">
+        <p class="text-muted mb-0">
 
-                <h6>Clients</h6>
+            @if(session('role') === 'admin')
 
-                <h2>0</h2>
+                Vous êtes connecté en tant qu'administrateur.
+
+            @elseif(session('role') === 'caissier')
+
+                Vous êtes connecté en tant que caissier.
+
+            @elseif(session('role') === 'independant')
+
+                Vous êtes connecté en tant qu'utilisateur indépendant.
+
+            @endif
+
+        </p>
+
+    </div>
+
+
+    {{-- Cartes principales --}}
+    <div class="row g-4">
+
+        {{-- Clients --}}
+        <div class="col-md-3">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Caissier 
+                    </h6>
+
+                    <h2>
+                        0
+                    </h2>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
 
-    <div class="col-md-3">
+        {{-- Factures --}}
+        <div class="col-md-3">
 
-        <div class="card shadow-sm">
+            <div class="card shadow-sm border-0">
 
-            <div class="card-body">
+                <div class="card-body">
 
-                <h6>Factures</h6>
+                    <h6 class="text-muted">
+                        Factures
+                    </h6>
 
-                <h2>0</h2>
+                    <h2>
+                        0
+                    </h2>
 
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="col-md-3">
-
-        <div class="card shadow-sm">
-
-            <div class="card-body">
-
-                <h6>Paiements</h6>
-
-                <h2>0</h2>
+                </div>
 
             </div>
 
         </div>
 
+
+        {{-- Paiements --}}
+        <div class="col-md-3">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Paiements
+                    </h6>
+
+                    <h2>
+                        0
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- Utilisateurs --}}
+        <div class="col-md-3">
+
+            @if(session('role') === 'admin')
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-body">
+
+                        <h6 class="text-muted">
+                            Utilisateurs
+                        </h6>
+
+                        <h2>
+                            Visible
+                        </h2>
+
+                        <a
+                            href="{{ route('utilisateurs.index') }}"
+                            class="btn btn-primary btn-sm">
+
+                            Gérer les utilisateurs
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            @else
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-body">
+
+                        <h6 class="text-muted">
+                            Utilisateurs
+                        </h6>
+
+                        <h2>
+                            —
+                        </h2>
+
+                        <small class="text-muted">
+                            Accès réservé à l'administrateur
+                        </small>
+
+                    </div>
+
+                </div>
+
+            @endif
+
+        </div>
+
     </div>
 
-    <div class="col-md-3">
 
-        <div class="card shadow-sm">
+    {{-- Informations sur le rôle --}}
+    <div class="card shadow-sm border-0 mt-4">
 
-            <div class="card-body">
+        <div class="card-body">
 
-                <h6>Utilisateurs</h6>
+            <h5>
+                Votre compte
+            </h5>
 
-                <h2>
+            <hr>
 
-                    @if(session('utilisateur')->role == 'admin')
+            <div class="row">
 
-                        Visible
+                <div class="col-md-4">
 
-                    @else
+                    <strong>Nom :</strong>
 
-                        —
+                    {{ session('nom') }}
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <strong>Email :</strong>
+
+                    {{ session('email') }}
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <strong>Rôle :</strong>
+
+
+                    @if(session('role') === 'admin')
+
+                        <span class="badge bg-danger">
+                            Administrateur
+                        </span>
+
+                    @elseif(session('role') === 'caissier')
+
+                        <span class="badge bg-primary">
+                            Caissier
+                        </span>
+
+                    @elseif(session('role') === 'independant')
+
+                        <span class="badge bg-success">
+                            Utilisateur indépendant
+                        </span>
 
                     @endif
 
-                </h2>
+                </div>
 
             </div>
 

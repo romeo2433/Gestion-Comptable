@@ -1,3 +1,4 @@
+
 <div class="sidebar">
 
     <!-- Logo -->
@@ -14,23 +15,29 @@
     <!-- Utilisateur connecté -->
     <div class="text-center mb-4">
 
-        <img src="https://ui-avatars.com/api/?name={{ urlencode(session('utilisateur')->nom) }}&background=ffffff&color=1B2A4A"
-             class="rounded-circle mb-2"
-             width="70">
+        @if(session('nom'))
+            <img
+                src="https://ui-avatars.com/api/?name={{ urlencode(session('nom')) }}&background=ffffff&color=1B2A4A"
+                alt="{{ session('nom') }}">
+        @endif
 
         <h6 class="text-white mb-1">
-            {{ session('utilisateur')->nom }}
+            {{ session('nom') }}
         </h6>
 
         <small class="text-light">
 
-            @if(session('utilisateur')->role=="admin")
+             @if(session('role') === 'admin')
 
-                Administrateur
+                Administrateur.
 
-            @else
+            @elseif(session('role') === 'caissier')
 
-                Caissier
+                Caissier.
+
+            @elseif(session('role') === 'independant')
+
+                Indépendant.
 
             @endif
 
@@ -52,9 +59,9 @@
 
     </a>
 
-    <!-- Clients -->
+    <!-- Achats -->
     <a href="{{ route('achats.index') }}"
-       class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+       class="nav-item {{ request()->routeIs('achats.*') ? 'active' : '' }}">
 
         <span class="nav-dot"></span>
 
@@ -62,7 +69,7 @@
 
     </a>
 
-    <!-- Factures -->
+    <!-- Factures / Ventes -->
     <a href="{{ route('factures.index') }}"
        class="nav-item {{ request()->routeIs('factures.*') ? 'active' : '' }}">
 
@@ -82,8 +89,9 @@
 
     </a>
 
-    <!-- Visible uniquement par l'administrateur -->
-    @if(session('utilisateur')->role=="admin")
+
+    <!-- Administration : uniquement pour l'admin -->
+    @if(session('role') === 'admin')
 
         <div class="nav-group-label">
             Administration
@@ -100,6 +108,8 @@
 
     @endif
 
+
+    <!-- Déconnexion -->
     <div style="margin-top:auto;">
 
         <hr style="border-color:rgba(255,255,255,.15);">
@@ -116,6 +126,7 @@
     </div>
 
 </div>
+
 
 <style>
 

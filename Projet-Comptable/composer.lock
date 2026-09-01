@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "25b93793590b8c0cddf6d7a3f450d453",
+    "content-hash": "aeccaf32722fa2ec051ad1db4838038f",
     "packages": [
         {
             "name": "brick/math",
@@ -661,21 +661,21 @@
         },
         {
             "name": "google-gemini-php/laravel",
-            "version": "2.0.4",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google-gemini-php/laravel.git",
-                "reference": "39cd52d8ed6ffdb8fe17ed3e9b74773f2c41f875"
+                "reference": "66ecb60b0c14b77a978bf8eb553425ee690a7cf5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google-gemini-php/laravel/zipball/39cd52d8ed6ffdb8fe17ed3e9b74773f2c41f875",
-                "reference": "39cd52d8ed6ffdb8fe17ed3e9b74773f2c41f875",
+                "url": "https://api.github.com/repos/google-gemini-php/laravel/zipball/66ecb60b0c14b77a978bf8eb553425ee690a7cf5",
+                "reference": "66ecb60b0c14b77a978bf8eb553425ee690a7cf5",
                 "shasum": ""
             },
             "require": {
                 "google-gemini-php/client": "^2.0",
-                "laravel/framework": "^9.0|^10.0|^11.0|^12.0|^13.0",
+                "laravel/framework": "^9.0|^10.0|^11.0|^12.0",
                 "php": "^8.1.0"
             },
             "require-dev": {
@@ -723,19 +723,9 @@
             ],
             "support": {
                 "issues": "https://github.com/google-gemini-php/laravel/issues",
-                "source": "https://github.com/google-gemini-php/laravel/tree/2.0.4"
+                "source": "https://github.com/google-gemini-php/laravel/tree/2.0.0"
             },
-            "funding": [
-                {
-                    "url": "https://github.com/Plytas",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/aydinfatih",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-04-12T12:14:21+00:00"
+            "time": "2025-05-09T15:56:18+00:00"
         },
         {
             "name": "graham-campbell/result-type",
