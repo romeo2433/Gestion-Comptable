@@ -24,6 +24,8 @@ class AchatController extends Controller
             return redirect()->route('login')
                 ->with('error', 'Veuillez vous connecter.');
         }
+         // Filtre département
+        $departementSelectionne = request('departement');
 
         $query = DB::table('factures as f')
             ->leftJoin(
@@ -62,6 +64,12 @@ class AchatController extends Controller
                 '=',
                 'u.id_utilisateur'
             )
+            ->leftJoin(
+                'departements as d',
+                'f.id_departement',
+                '=',
+                'd.id_departement'
+            )
 
             // NE GARDER QUE LES ACHATS — sans ce filtre, les futures
             // ventes (type='vente') apparaîtraient aussi dans cette liste.
@@ -76,6 +84,7 @@ class AchatController extends Controller
 
                 'fo.nom as nom_fournisseur',
                 'u.nom as nom_utilisateur',
+                'd.nom as nom_departement',
 
                 DB::raw(
                     "CONCAT(c.numero_compte, ' - ', c.intitule) as compte_charge"
@@ -106,11 +115,21 @@ class AchatController extends Controller
             //              (personne d'autre, admin y compris, ne les voit)
             ->when(
                 $role === 'admin',
-                function ($query) {
+                function ($query) use ($departementSelectionne) {
+            
                     $query->where(function ($q) {
                         $q->where('u.role', '!=', 'independant')
                           ->orWhereNull('u.role');
                     });
+            
+                    // Filtre département
+                    if (!empty($departementSelectionne)) {
+            
+                        $query->where(
+                            'f.id_departement',
+                            $departementSelectionne
+                        );
+                    }
                 },
                 function ($query) use ($idUtilisateur) {
                     $query->where(
@@ -133,16 +152,27 @@ class AchatController extends Controller
                 'f.montant_tva',
                 'ct.numero_compte',
                 'ct.intitule',
+                'd.nom',
                 'u.nom'
             )
 
             ->orderByDesc('f.date_facture');
+        $departements = collect();
+            if ($role === 'admin') {
+                $departements = DB::table('departements')
+                    ->orderBy('nom')
+                    ->get();
+            }
 
         $achats = $query->get();
 
         return view(
             'achats.index',
-            compact('achats')
+            compact(
+                'achats',
+                'departements',
+                'departementSelectionne'
+            )
         );
     }
 
@@ -158,6 +188,7 @@ class AchatController extends Controller
         ]);
 
         $idUtilisateur = session('id_utilisateur');
+        $idDepartement = session('id_departement');
 
         if (!$idUtilisateur) {
             return redirect()
@@ -180,7 +211,8 @@ class AchatController extends Controller
                 $idFacture = $this->enregistrerFactureComplete(
                     $donneesGemini,
                     $chemin,
-                    $idUtilisateur
+                    $idUtilisateur,
+                    $idDepartement
                 );
 
                 return redirect()
@@ -244,7 +276,8 @@ class AchatController extends Controller
             $statut = empty($champsManquants) ? 'Terminer' : 'A verifier';
 
             DB::table('factures')->insertGetId([
-                'type'             => 'achat', // <-- ajouté
+                'type'             => 'achat',
+                'id_departement'   => $idDepartement,
                 'numero_facture'   => $numeroFacture,
                 'fichier_facture'  => $chemin,
                 'id_utilisateur'   => $idUtilisateur,
@@ -396,9 +429,9 @@ PROMPT;
      * Le compte de charge proposé par Gemini est créé automatiquement s'il
      * n'existe pas encore (même logique que pour le fournisseur).
      */
-    private function enregistrerFactureComplete(array $data, string $cheminFichier, int $idUtilisateur): int
+    private function enregistrerFactureComplete(array $data, string $cheminFichier, int $idUtilisateur, ?int $idDepartement): int
     {
-        return DB::transaction(function () use ($data, $cheminFichier, $idUtilisateur) {
+        return DB::transaction(function () use ($data, $cheminFichier, $idUtilisateur, $idDepartement) {
 
             // 1. Fournisseur
             $idFournisseur = $this->obtenirOuCreerFournisseur($data['fournisseur'] ?? null);
@@ -457,7 +490,8 @@ PROMPT;
 
             // 3. Facture
             $idFacture = DB::table('factures')->insertGetId([
-                'type'             => 'achat', // <-- ajouté
+                'type'             => 'achat', 
+                'id_departement'   => $idDepartement,
                 'numero_facture'   => $data['numero_facture'] ?? 'INCONNU',
                 'fichier_facture'  => $cheminFichier,
                 'id_utilisateur'   => $idUtilisateur,

@@ -88,7 +88,7 @@
 
                         <option value="caissier"
                             {{ old('role') === 'caissier' ? 'selected' : '' }}>
-                            Caissier
+                            Comptable
                         </option>
 
                         <option value="independant"

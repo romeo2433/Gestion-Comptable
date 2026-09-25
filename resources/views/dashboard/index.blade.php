@@ -8,8 +8,13 @@
 
 <div class="container-fluid">
 
-    {{-- Bienvenue --}}
+
+    {{-- ========================================================= --}}
+    {{-- BIENVENUE --}}
+    {{-- ========================================================= --}}
+
     <div class="card shadow-sm border-0 mb-4">
+
         <div class="card-body py-4">
 
             <h3 class="mb-2">
@@ -21,64 +26,200 @@
                 @if(session('role') === 'admin')
 
                     Bienvenue sur votre espace d'administration.
-                    Vous pouvez suivre les utilisateurs, les factures de vente
-                    et les factures d'achat enregistrées dans le système.
+                    Vous pouvez suivre les utilisateurs, les factures
+                    de vente et les factures d'achat.
 
                 @elseif(session('role') === 'caissier')
 
                     Bienvenue sur votre espace de gestion.
-                    Depuis ce tableau de bord, vous pouvez suivre vos factures
-                    de vente et vos factures d'achat.
+                    Vous pouvez suivre vos factures de vente
+                    et vos factures d'achat.
 
                 @elseif(session('role') === 'independant')
 
                     Bienvenue sur votre espace personnel.
-                    Vous pouvez gérer vos factures de vente et vos factures
-                    d'achat en toute indépendance.
+                    Vous pouvez gérer vos factures de vente
+                    et vos factures d'achat.
 
                 @endif
 
             </p>
 
         </div>
+
     </div>
 
 
-    {{-- Statistiques --}}
-    <div class="row g-4">
+    {{-- ========================================================= --}}
+    {{-- FILTRE ADMIN --}}
+    {{-- ========================================================= --}}
 
-        {{-- Caissiers --}}
-        @if(session('role') === 'admin')
+    @if(session('role') === 'admin')
 
-        <div class="col-md-3">
+        <div class="card shadow-sm border-0 mb-4">
 
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
+            <div class="card-body">
 
-                    <h6 class="text-muted">
-                        Caissiers
-                    </h6>
+                <div class="d-flex justify-content-between align-items-center mb-3">
 
-                    <h2>
-                        {{ $nombreCaissiers }}
-                    </h2>
+                    <div>
 
-                    <small class="text-muted">
-                        Comptes caissiers
-                    </small>
+                        <h5 class="mb-1">
+                            Filtrer par département
+                        </h5>
+
+                        <p class="text-muted mb-0">
+                            Affichez les activités d'un département spécifique.
+                        </p>
+
+                    </div>
+
+                    @if($nomDepartementSelectionne)
+
+                        <span class="badge bg-primary">
+                            {{ $nomDepartementSelectionne }}
+                        </span>
+
+                    @else
+
+                        <span class="badge bg-secondary">
+                            Tous les départements
+                        </span>
+
+                    @endif
 
                 </div>
+
+
+                <form
+                    method="GET"
+                    action="{{ route('dashboard') }}"
+                    class="row g-3 align-items-end"
+                >
+
+                    <div class="col-md-6">
+
+                        <label
+                            for="departement"
+                            class="form-label"
+                        >
+                            Département
+                        </label>
+
+                        <select
+                            name="departement"
+                            id="departement"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Tous les départements
+                            </option>
+
+                            @foreach($departements as $departement)
+
+                                <option
+                                    value="{{ $departement->id_departement }}"
+                                    {{ (string) $departementSelectionne === (string) $departement->id_departement ? 'selected' : '' }}
+                                >
+                                    {{ $departement->nom }}
+                                </option>
+
+                            @endforeach
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-auto">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            Filtrer
+                        </button>
+
+                    </div>
+
+
+                    @if(!empty($departementSelectionne))
+
+                        <div class="col-md-auto">
+
+                            <a
+                                href="{{ route('dashboard') }}"
+                                class="btn btn-outline-secondary"
+                            >
+                                Réinitialiser
+                            </a>
+
+                        </div>
+
+                    @endif
+
+                </form>
+
             </div>
 
         </div>
 
+    @endif
+
+
+    {{-- ========================================================= --}}
+    {{-- STATISTIQUES --}}
+    {{-- ========================================================= --}}
+
+    <div class="row g-4">
+
+
+        {{-- Caissiers --}}
+        @if(session('role') === 'admin')
+
+            <div class="col-md-3">
+
+                <div class="card shadow-sm border-0 h-100">
+
+                    <div class="card-body">
+
+                        <h6 class="text-muted">
+                            Caissiers
+                        </h6>
+
+                        <h2>
+                            {{ $nombreCaissiers }}
+                        </h2>
+
+                        <small class="text-muted">
+
+                            @if($nomDepartementSelectionne)
+
+                                Dans {{ $nomDepartementSelectionne }}
+
+                            @else
+
+                                Tous les départements
+
+                            @endif
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         @endif
 
 
-        {{-- Factures de vente --}}
+        {{-- Factures vente --}}
         <div class="col-md-3">
 
             <div class="card shadow-sm border-0 h-100">
+
                 <div class="card-body">
 
                     <h6 class="text-muted">
@@ -90,19 +231,31 @@
                     </h2>
 
                     <small class="text-muted">
-                        Factures de vente enregistrées
+
+                        @if($nomDepartementSelectionne)
+
+                            {{ $nomDepartementSelectionne }}
+
+                        @else
+
+                            Tous les départements
+
+                        @endif
+
                     </small>
 
                 </div>
+
             </div>
 
         </div>
 
 
-        {{-- Factures d'achat --}}
+        {{-- Factures achat --}}
         <div class="col-md-3">
 
             <div class="card shadow-sm border-0 h-100">
+
                 <div class="card-body">
 
                     <h6 class="text-muted">
@@ -114,19 +267,31 @@
                     </h2>
 
                     <small class="text-muted">
-                        Factures d'achat enregistrées
+
+                        @if($nomDepartementSelectionne)
+
+                            {{ $nomDepartementSelectionne }}
+
+                        @else
+
+                            Tous les départements
+
+                        @endif
+
                     </small>
 
                 </div>
+
             </div>
 
         </div>
 
 
-        {{-- Factures impayées --}}
+        {{-- Impayées --}}
         <div class="col-md-3">
 
             <div class="card shadow-sm border-0 h-100">
+
                 <div class="card-body">
 
                     <h6 class="text-muted">
@@ -142,6 +307,7 @@
                     </small>
 
                 </div>
+
             </div>
 
         </div>
@@ -149,83 +315,141 @@
     </div>
 
 
-    {{-- Présentation du tableau de bord --}}
-    <div class="card shadow-sm border-0 mt-4">
+    {{-- ========================================================= --}}
+    {{-- INFORMATION FILTRE --}}
+    {{-- ========================================================= --}}
 
-        <div class="card-body">
+    @if(session('role') === 'admin')
 
-            <h5 class="mb-3">
-                Vue d'ensemble
-            </h5>
+        <div class="card shadow-sm border-0 mt-4">
 
-            <p class="text-muted mb-0">
-                Ce tableau de bord vous permet d'avoir une vue rapide sur
-                l'activité de votre compte. Les informations affichées
-                correspondent à vos droits d'accès et à votre rôle dans
-                l'application.
-            </p>
+            <div class="card-body">
+
+                <h5 class="mb-2">
+                    Vue d'ensemble
+                </h5>
+
+                @if($nomDepartementSelectionne)
+
+                    <p class="text-muted mb-0">
+
+                        Les statistiques affichées correspondent
+                        uniquement au département
+                        <strong>
+                            {{ $nomDepartementSelectionne }}
+                        </strong>.
+
+                    </p>
+
+                @else
+
+                    <p class="text-muted mb-0">
+
+                        Les statistiques affichées correspondent
+                        à l'ensemble des départements.
+
+                    </p>
+
+                @endif
+
+            </div>
 
         </div>
 
-    </div>
-    {{-- Graphique : uniquement pour l'administrateur --}}
-        @if(session('role') === 'admin')
+    @endif
+
+
+    {{-- ========================================================= --}}
+    {{-- GRAPHIQUE ADMIN --}}
+    {{-- ========================================================= --}}
+
+    @if(session('role') === 'admin')
 
         <div class="card shadow-sm border-0 mt-4 mb-4">
 
             <div class="card-body">
 
+
                 <div class="d-flex justify-content-between align-items-center mb-3">
 
                     <div>
+
                         <h5 class="mb-1">
                             Activité des factures
                         </h5>
 
                         <p class="text-muted mb-0">
-                            Nombre de factures par mois et par type d'utilisateur
+
+                            @if($nomDepartementSelectionne)
+
+                                Activité du département
+                                <strong>
+                                    {{ $nomDepartementSelectionne }}
+                                </strong>
+
+                            @else
+
+                                Activité de tous les départements
+
+                            @endif
+
                         </p>
+
                     </div>
 
+
                     <span class="badge bg-light text-dark">
+
                         12 derniers mois
+
                     </span>
 
                 </div>
 
 
                 <div style="height: 380px;">
+
                     <canvas id="facturesChart"></canvas>
+
                 </div>
 
             </div>
 
         </div>
 
-        @endif
+    @endif
 
 
-        {{-- Chart.js --}}
-        @if(session('role') === 'admin')
+    {{-- ========================================================= --}}
+    {{-- CHART.JS --}}
+    {{-- ========================================================= --}}
+
+    @if(session('role') === 'admin')
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script>
 
-            const labels = @json($labelsGraphique);
+            const labels =
+                @json($labelsGraphique);
 
-            const ventesCaissiers = @json($ventesCaissiers);
+            const ventesCaissiers =
+                @json($ventesCaissiers);
 
-            const achatsCaissiers = @json($achatsCaissiers);
+            const achatsCaissiers =
+                @json($achatsCaissiers);
 
-            const ventesIndependants = @json($ventesIndependants);
+            const ventesIndependants =
+                @json($ventesIndependants);
 
-            const achatsIndependants = @json($achatsIndependants);
+            const achatsIndependants =
+                @json($achatsIndependants);
 
 
-            const ctx = document
-                .getElementById('facturesChart')
-                .getContext('2d');
+            const ctx =
+                document
+                    .getElementById('facturesChart')
+                    .getContext('2d');
 
 
             new Chart(ctx, {
@@ -290,22 +514,31 @@
 
                 },
 
+
                 options: {
 
                     responsive: true,
 
                     maintainAspectRatio: false,
 
+
                     interaction: {
+
                         intersect: false,
+
                         mode: 'index'
+
                     },
+
 
                     plugins: {
 
                         legend: {
+
                             position: 'bottom'
+
                         },
+
 
                         tooltip: {
 
@@ -325,6 +558,7 @@
                         }
 
                     },
+
 
                     scales: {
 
@@ -348,6 +582,7 @@
 
                         },
 
+
                         x: {
 
                             title: {
@@ -368,7 +603,8 @@
 
         </script>
 
-        @endif
+    @endif
+
 
 </div>
 

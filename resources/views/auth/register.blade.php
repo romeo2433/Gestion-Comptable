@@ -8,287 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
-<style>
-    :root{
-        --paper:#F4F2ED;
-        --ink:#1B211F;
-        --ink-soft:#5B6560;
-        --emerald:#1F5D50;
-        --emerald-dark:#123832;
-        --emerald-tint:#E4EEEB;
-        --gold:#B9863A;
-        --line:#DCD6C8;
-        --white:#FFFFFF;
-        --danger:#B3402C;
-        --radius:14px;
-    }
-
-    *{ box-sizing:border-box; }
-
-    body{
-        margin:0;
-        min-height:100vh;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        background:var(--paper);
-        background-image:
-            radial-gradient(circle at 1px 1px, rgba(27,33,31,.05) 1px, transparent 0);
-        background-size:22px 22px;
-        font-family:'Inter', sans-serif;
-        color:var(--ink);
-        padding:32px 16px;
-    }
-
-    .panel{
-        width:100%;
-        max-width:920px;
-        background:var(--white);
-        border:1px solid var(--line);
-        border-radius:var(--radius);
-        display:grid;
-        grid-template-columns:0.85fr 1.15fr;
-        overflow:hidden;
-        box-shadow:0 1px 2px rgba(27,33,31,.04);
-        animation:rise .5s ease both;
-    }
-
-    @keyframes rise{
-        from{ opacity:0; transform:translateY(10px); }
-        to{ opacity:1; transform:translateY(0); }
-    }
-
-    /* ---------- Brand side ---------- */
-    .brand{
-        position:relative;
-        background:var(--emerald-dark);
-        color:#EFEDE4;
-        padding:44px 38px;
-        display:flex;
-        flex-direction:column;
-        justify-content:space-between;
-    }
-
-    .brand::before{
-        content:"";
-        position:absolute; inset:0;
-        background-image:repeating-linear-gradient(
-            180deg,
-            rgba(244,242,237,.05) 0px,
-            rgba(244,242,237,.05) 1px,
-            transparent 1px,
-            transparent 28px
-        );
-        pointer-events:none;
-    }
-
-    .mark{
-        display:inline-flex;
-        align-items:center;
-        gap:9px;
-        font-family:'Fraunces', serif;
-        font-size:19px;
-        font-weight:500;
-        letter-spacing:.2px;
-        z-index:1;
-    }
-
-    .mark svg{ flex:none; }
-
-    .brand-copy{ z-index:1; }
-
-    .brand-copy h1{
-        font-family:'Fraunces', serif;
-        font-weight:500;
-        font-size:clamp(26px,3vw,32px);
-        line-height:1.22;
-        margin:0 0 14px;
-    }
-
-    .brand-copy p{
-        margin:0;
-        font-size:14.5px;
-        line-height:1.6;
-        color:#C9D3CE;
-        max-width:30ch;
-    }
-
-    .receipt{
-        z-index:1;
-        border-top:1px dashed rgba(239,237,228,.3);
-        padding-top:18px;
-        display:flex;
-        gap:22px;
-    }
-
-    .receipt div p{ margin:0; }
-    .receipt .num{
-        font-family:'Fraunces', serif;
-        font-size:22px;
-    }
-    .receipt .lbl{
-        font-size:11.5px;
-        color:#9FADA6;
-        margin-top:2px;
-    }
-
-    /* ---------- Form side ---------- */
-    .form-side{ padding:44px 42px; }
-
-    .form-side h2{
-        font-family:'Fraunces', serif;
-        font-weight:500;
-        font-size:23px;
-        margin:0 0 6px;
-    }
-
-    .form-side .sub{
-        font-size:14px;
-        color:var(--ink-soft);
-        margin:0 0 28px;
-    }
-
-    .field{ margin-bottom:18px; }
-
-    .field label{
-        display:block;
-        font-size:13px;
-        font-weight:500;
-        color:var(--ink);
-        margin-bottom:6px;
-    }
-
-    .field input{
-        width:100%;
-        padding:11px 13px;
-        font-size:14.5px;
-        font-family:inherit;
-        color:var(--ink);
-        background:var(--white);
-        border:1px solid var(--line);
-        border-radius:9px;
-        transition:border-color .15s ease, box-shadow .15s ease;
-    }
-
-    .field input:focus{
-        outline:none;
-        border-color:var(--emerald);
-        box-shadow:0 0 0 3px var(--emerald-tint);
-    }
-
-    .pass-wrap{ position:relative; }
-
-    .pass-wrap input{ padding-right:44px; }
-
-    .toggle-pass{
-        position:absolute;
-        right:6px; top:50%;
-        transform:translateY(-50%);
-        background:none;
-        border:none;
-        color:var(--ink-soft);
-        font-size:12.5px;
-        font-family:inherit;
-        cursor:pointer;
-        padding:6px 8px;
-        border-radius:6px;
-    }
-    .toggle-pass:hover{ color:var(--ink); background:var(--paper); }
-    .toggle-pass:focus-visible{ outline:2px solid var(--emerald); outline-offset:1px; }
-
-    /* Role picker */
-    .role-group{
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:10px;
-    }
-
-    .role-card{
-        position:relative;
-        border:1px solid var(--line);
-        border-radius:10px;
-        padding:13px 12px;
-        cursor:pointer;
-        transition:border-color .15s ease, background .15s ease;
-    }
-
-    .role-card input{
-        position:absolute;
-        opacity:0;
-        inset:0;
-        margin:0;
-        cursor:pointer;
-    }
-
-    .role-card svg{ display:block; margin-bottom:8px; color:var(--emerald); }
-
-    .role-card .r-title{
-        font-size:13.5px;
-        font-weight:600;
-        color:var(--ink);
-    }
-
-    .role-card .r-desc{
-        font-size:11.5px;
-        color:var(--ink-soft);
-        margin-top:2px;
-        line-height:1.4;
-    }
-
-    .role-card:has(input:checked){
-        border-color:var(--emerald);
-        background:var(--emerald-tint);
-    }
-
-    .role-card:has(input:focus-visible){
-        outline:2px solid var(--emerald);
-        outline-offset:1px;
-    }
-
-    .submit-btn{
-        width:100%;
-        margin-top:6px;
-        padding:12px;
-        font-family:inherit;
-        font-size:14.5px;
-        font-weight:600;
-        color:#F4F2ED;
-        background:var(--emerald);
-        border:none;
-        border-radius:9px;
-        cursor:pointer;
-        transition:background .15s ease;
-    }
-
-    .submit-btn:hover{ background:var(--emerald-dark); }
-    .submit-btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
-
-    .foot-link{
-        text-align:center;
-        margin-top:20px;
-        font-size:13.5px;
-        color:var(--ink-soft);
-    }
-
-    .foot-link a{
-        color:var(--emerald-dark);
-        font-weight:600;
-        text-decoration:none;
-    }
-    .foot-link a:hover{ text-decoration:underline; }
-
-    @media (max-width:760px){
-        .panel{ grid-template-columns:1fr; }
-        .brand{ padding:32px 28px; }
-        .receipt{ display:none; }
-        .form-side{ padding:34px 26px; }
-    }
-
-    @media (prefers-reduced-motion:reduce){
-        .panel{ animation:none; }
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/register.css') }}">
 </head>
 <body>
 
@@ -349,31 +69,112 @@
                 </div>
             </div>
 
-            <div class="field">
+            <!-- Type de compte : le sélecteur "role-field" sert de point d'ancrage
+                 pour la révélation CSS pur du champ département juste en dessous -->
+            <div class="field role-field">
                 <label>Type de compte</label>
+
                 <div class="role-group">
 
                     <label class="role-card">
-                        <input type="radio" name="role" value="caissier" required>
+                        <input
+                            type="radio"
+                            name="role"
+                            value="caissier"
+                            required
+                        >
+
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <rect x="3" y="7" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
-                            <path d="M3 11h18M7 15h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                            <rect
+                                x="3"
+                                y="7"
+                                width="18"
+                                height="12"
+                                rx="2"
+                                stroke="currentColor"
+                                stroke-width="1.4"
+                            />
+                            <path
+                                d="M3 11h18M7 15h4"
+                                stroke="currentColor"
+                                stroke-width="1.4"
+                                stroke-linecap="round"
+                            />
                         </svg>
-                        <div class="r-title">Caissier</div>
-                        <div class="r-desc">Rattaché à un point de vente</div>
+
+                        <div class="r-title">Comptable</div>
+                        <div class="r-desc">Rattaché à un département</div>
                     </label>
 
+
                     <label class="role-card">
-                        <input type="radio" name="role" value="independant" required>
+                        <input
+                            type="radio"
+                            name="role"
+                            value="independant"
+                            required
+                        >
+
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.4"/>
-                            <path d="M5.5 20c1-3.8 4-5.5 6.5-5.5s5.5 1.7 6.5 5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                            <circle
+                                cx="12"
+                                cy="8"
+                                r="3.2"
+                                stroke="currentColor"
+                                stroke-width="1.4"
+                            />
+                            <path
+                                d="M5.5 20c1-3.8 4-5.5 6.5-5.5s5.5 1.7 6.5 5.5"
+                                stroke="currentColor"
+                                stroke-width="1.4"
+                                stroke-linecap="round"
+                            />
                         </svg>
+
                         <div class="r-title">Indépendant</div>
                         <div class="r-desc">Gère son activité seul</div>
                     </label>
 
                 </div>
+            </div>
+
+
+            <!-- Département : révélé uniquement en CSS quand "caissier" est coché
+                 (voir .role-field:has(input[value="caissier"]:checked) + #departement-container) -->
+            <div
+                class="field"
+                id="departement-container"
+            >
+
+                <label for="id_departement">
+                    Département <span style="color:red;">*</span>
+                </label>
+
+                <select
+                    id="id_departement"
+                    name="id_departement"
+                >
+
+                    <option value="">
+                        -- Sélectionner un département --
+                    </option>
+
+                    @foreach(DB::table('departements')->orderBy('nom')->get() as $departement)
+
+                        <option value="{{ $departement->id_departement }}">
+                            {{ $departement->nom }}
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+                @error('id_departement')
+                    <small style="color:red;">
+                        {{ $message }}
+                    </small>
+                @enderror
+
             </div>
 
             <button type="submit" class="submit-btn">S'inscrire</button>

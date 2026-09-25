@@ -85,7 +85,7 @@
 
                         <option value="caissier"
                             {{ $utilisateur->role === 'caissier' ? 'selected' : '' }}>
-                            Caissier
+                            Comptable
                         </option>
 
                         <option value="independant"

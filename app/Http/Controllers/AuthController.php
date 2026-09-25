@@ -42,6 +42,9 @@ class AuthController extends Controller
             'email' => 'required|email|unique:utilisateurs,email',
             'mot_de_passe' => 'required|string|min:4',
             'role' => 'required|in:caissier,independant',
+
+            // Obligatoire uniquement pour un caissier
+            'id_departement' => 'nullable|required_if:role,caissier|exists:departements,id_departement',
         ]);
 
         $idUtilisateur = DB::table('utilisateurs')->insertGetId([
@@ -49,6 +52,13 @@ class AuthController extends Controller
             'email' => $request->email,
             'mot_de_passe' => $request->mot_de_passe,
             'role' => $request->role,
+
+            // Caissier → département choisi
+            // Indépendant → NULL
+            'id_departement' => $request->role === 'caissier'
+                ? $request->id_departement
+                : null,
+
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -59,11 +69,15 @@ class AuthController extends Controller
             'nom' => $request->nom,
             'email' => $request->email,
             'role' => $request->role,
+            'id_departement' => $request->role === 'caissier'
+                ? $request->id_departement
+                : null,
         ]);
 
         // Indépendant → informations entreprise
         if ($request->role === 'independant') {
-            return redirect()->route('entreprise.create');
+            return redirect()
+                ->route('entreprises.create');
         }
 
         // Caissier → connexion/dashboard
@@ -158,6 +172,8 @@ class AuthController extends Controller
             'email' => $utilisateur->email,
     
             'role' => $utilisateur->role,
+
+            'id_departement'  => $utilisateur->id_departement,
         ]);
     
     

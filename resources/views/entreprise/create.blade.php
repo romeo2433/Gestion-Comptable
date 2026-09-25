@@ -251,7 +251,7 @@
                 <span class="dot"></span>Champs obligatoires
             </div>
 
-            <form action="{{ route('entreprise.store') }}" method="POST">
+            <form action="{{ route('entreprises.store') }}" method="POST">
                 @csrf
 
                 <!-- ===== Informations générales ===== -->

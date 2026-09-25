@@ -24,6 +24,7 @@ class VenteController extends Controller
             return redirect()->route('login')
                 ->with('error', 'Veuillez vous connecter.');
         }
+        $departementSelectionne = request('departement');
 
         $query = DB::table('factures as f')
             ->leftJoin(
@@ -62,6 +63,12 @@ class VenteController extends Controller
                 '=',
                 'u.id_utilisateur'
             )
+            ->leftJoin(
+                'departements as d',
+                'f.id_departement',
+                '=',
+                'd.id_departement'
+            )
 
             // NE GARDER QUE LES VENTES
             ->where('f.type', 'vente')
@@ -75,6 +82,7 @@ class VenteController extends Controller
 
                 'cl.nom_complet as nom_client',
                 'u.nom as nom_utilisateur',
+                'd.nom as nom_departement',
 
                 DB::raw(
                     "CONCAT(c.numero_compte, ' - ', c.intitule) as compte_produit"
@@ -105,11 +113,21 @@ class VenteController extends Controller
             //              (personne d'autre, admin y compris, ne les voit)
             ->when(
                 $role === 'admin',
-                function ($query) {
+                function ($query) use ($departementSelectionne) {
+            
                     $query->where(function ($q) {
                         $q->where('u.role', '!=', 'independant')
                           ->orWhereNull('u.role');
                     });
+            
+                    // Filtre département
+                    if (!empty($departementSelectionne)) {
+            
+                        $query->where(
+                            'f.id_departement',
+                            $departementSelectionne
+                        );
+                    }
                 },
                 function ($query) use ($idUtilisateur) {
                     $query->where(
@@ -132,16 +150,28 @@ class VenteController extends Controller
                 'f.montant_tva',
                 'ct.numero_compte',
                 'ct.intitule',
+                'd.nom',
                 'u.nom'
             )
 
             ->orderByDesc('f.date_facture');
+            $departements = collect();
+
+            if ($role === 'admin') {
+            
+                $departements = DB::table('departements')
+                    ->orderBy('nom')
+                    ->get();
+            }
 
         $ventes = $query->get();
 
         return view(
             'ventes.index',
-            compact('ventes')
+        compact(
+            'ventes',
+            'departements',
+            'departementSelectionne')
         );
     }
 
@@ -157,6 +187,7 @@ class VenteController extends Controller
         ]);
 
         $idUtilisateur = session('id_utilisateur');
+        $idDepartement = session('id_departement');
 
         if (!$idUtilisateur) {
             return redirect()
@@ -179,7 +210,8 @@ class VenteController extends Controller
                 $idFacture = $this->enregistrerFactureComplete(
                     $donneesGemini,
                     $chemin,
-                    $idUtilisateur
+                    $idUtilisateur,
+                    $idDepartement
                 );
 
                 return redirect()
@@ -244,6 +276,7 @@ class VenteController extends Controller
 
             DB::table('factures')->insertGetId([
                 'type'              => 'vente',
+                'id_departement'   => $idDepartement,
                 'numero_facture'    => $numeroFacture,
                 'fichier_facture'   => $chemin,
                 'id_utilisateur'    => $idUtilisateur,
@@ -391,9 +424,9 @@ PROMPT;
      * Le compte de produit proposé par Gemini est créé automatiquement s'il
      * n'existe pas encore (même logique que pour le client).
      */
-    private function enregistrerFactureComplete(array $data, string $cheminFichier, int $idUtilisateur): int
+    private function enregistrerFactureComplete(array $data, string $cheminFichier, int $idUtilisateur, ?int $idDepartement): int
     {
-        return DB::transaction(function () use ($data, $cheminFichier, $idUtilisateur) {
+        return DB::transaction(function () use ($data, $cheminFichier, $idUtilisateur, $idDepartement) {
 
             // 1. Client
             $idClient = $this->obtenirOuCreerClient($data['client'] ?? null);
@@ -455,6 +488,7 @@ PROMPT;
             // 3. Facture
             $idFacture = DB::table('factures')->insertGetId([
                 'type'              => 'vente',
+                'id_departement'   => $idDepartement,
                 'numero_facture' => $data['numero_facture'] ?? null,
                 'fichier_facture'   => $cheminFichier,
                 'id_utilisateur'    => $idUtilisateur,

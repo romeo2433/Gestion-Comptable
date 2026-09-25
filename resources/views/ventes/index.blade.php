@@ -5,234 +5,7 @@
 
 @section('content')
 
-<style>
-    :root{
-        --paper:#F4F2ED;
-        --ink:#1B211F;
-        --ink-soft:#5B6560;
-        --emerald:#1F5D50;
-        --emerald-dark:#123832;
-        --emerald-tint:#E4EEEB;
-        --gold:#B9863A;
-        --gold-tint:#F4E9D6;
-        --line:#DCD6C8;
-        --danger:#B3402C;
-        --danger-tint:#FBEAE6;
-        --success:#1F5D50;
-        --success-tint:#E4EEEB;
-        --success-line:#CFE1DA;
-    }
-
-    h5{
-        font-family:'Fraunces', serif;
-        font-weight:500;
-    }
-
-    /* ---------- cards ---------- */
-    .card{
-        background:#FFFFFF;
-        border:1px solid var(--line);
-        border-radius:12px;
-        box-shadow:none;
-    }
-
-    .card-header{
-        background:#FFFFFF;
-        border-bottom:1px solid var(--line);
-        padding:16px 22px;
-    }
-
-    .card-header h5{
-        margin:0;
-        font-size:16.5px;
-    }
-
-    .card-body{
-        padding:22px;
-    }
-
-    /* ---------- alerts ---------- */
-    .alert{
-        border-radius:10px;
-        border:1px solid;
-        font-size:13.5px;
-        padding:12px 15px;
-    }
-
-    .alert-success{
-        background:var(--success-tint);
-        border-color:var(--success-line);
-        color:var(--emerald-dark);
-    }
-
-    .alert-danger{
-        background:var(--danger-tint);
-        border-color:#E9C7BC;
-        color:var(--danger);
-    }
-
-    .alert-danger ul{
-        padding-left:18px;
-        margin:4px 0 0;
-    }
-
-    /* ---------- dropzone ---------- */
-    .dropzone{
-        border:1.5px dashed var(--line);
-        border-radius:12px;
-        padding:34px 20px;
-        text-align:center;
-        cursor:pointer;
-        background:var(--paper);
-        transition:border-color .15s ease, background .15s ease;
-    }
-
-    .dropzone:hover{
-        border-color:var(--emerald);
-        background:var(--emerald-tint);
-    }
-
-    .dropzone svg{
-        color:var(--emerald);
-        margin-bottom:8px;
-    }
-
-    .dropzone .dz-title{
-        font-size:14.5px;
-        font-weight:600;
-        margin-bottom:2px;
-    }
-
-    .dropzone .dz-sub{
-        font-size:12.5px;
-        color:var(--ink-soft);
-    }
-
-    #file-name{
-        margin-top:10px;
-        font-size:13px;
-        font-weight:600;
-        color:var(--emerald);
-    }
-
-    /* ---------- buttons ---------- */
-    .btn-primary{
-        background:var(--emerald);
-        border-color:var(--emerald);
-        font-weight:600;
-        border-radius:8px;
-    }
-
-    .btn-primary:hover{
-        background:var(--emerald-dark);
-        border-color:var(--emerald-dark);
-    }
-
-    .btn-outline-primary{
-        color:var(--emerald);
-        border-color:var(--emerald);
-        border-radius:8px;
-    }
-
-    .btn-outline-primary:hover{
-        background:var(--emerald);
-        border-color:var(--emerald);
-    }
-
-    .btn-outline-success{
-        color:var(--emerald);
-        border-color:var(--emerald);
-        border-radius:8px;
-    }
-
-    .btn-outline-success:hover{
-        background:var(--emerald);
-        border-color:var(--emerald);
-    }
-
-    .btn-outline-danger{
-        color:var(--danger);
-        border-color:#E9C7BC;
-        border-radius:8px;
-    }
-
-    .btn-outline-danger:hover{
-        background:var(--danger);
-        border-color:var(--danger);
-    }
-
-    .btn svg{
-        vertical-align:-2.5px;
-        margin-right:3px;
-    }
-
-    /* ---------- table ---------- */
-    .table thead th{
-        background:var(--paper);
-        color:var(--ink-soft);
-        font-size:11.5px;
-        text-transform:uppercase;
-        letter-spacing:.5px;
-        font-weight:600;
-        border-bottom:1px solid var(--line);
-        padding:11px 14px;
-        white-space:nowrap;
-    }
-
-    .table tbody td{
-        padding:13px 14px;
-        font-size:13.5px;
-        border-bottom:1px solid var(--line);
-        vertical-align:middle;
-    }
-
-    .table tbody tr:hover{
-        background:var(--emerald-tint);
-    }
-
-    .table tbody tr:last-child td{
-        border-bottom:none;
-    }
-
-    .badge-unpaid{
-        display:inline-block;
-        background:var(--gold-tint);
-        color:#8A5F1E;
-        font-size:11.5px;
-        font-weight:600;
-        padding:4px 9px;
-        border-radius:20px;
-    }
-
-    .form-select-sm{
-        border-radius:7px;
-        border-color:var(--line);
-        font-size:13px;
-    }
-
-    .form-select-sm:focus{
-        border-color:var(--emerald);
-        box-shadow:0 0 0 3px var(--emerald-tint);
-    }
-
-    .empty-row{
-        text-align:center;
-        color:var(--ink-soft);
-        padding:34px 0;
-        font-size:13.5px;
-    }
-
-    /* ---------- badge vente ---------- */
-    .badge-sale{
-        display:inline-block;
-        background:var(--emerald-tint);
-        color:var(--emerald-dark);
-        font-size:11.5px;
-        font-weight:600;
-        padding:4px 9px;
-        border-radius:20px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/style.css') }}">
 
 {{-- Messages --}}
 
@@ -342,6 +115,75 @@
 
 
 </div>
+@if(session('role') === 'admin')
+
+<div class="card mb-3">
+    <div class="card-body">
+
+        <form method="GET">
+
+            <div class="row">
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Département
+                    </label>
+
+                    <select
+                        name="departement"
+                        class="form-select"
+                    >
+
+                        <option value="">
+                            Tous les départements
+                        </option>
+
+                        @foreach($departements as $dep)
+
+                            <option
+                                value="{{ $dep->id_departement }}"
+                                {{ $departementSelectionne == $dep->id_departement ? 'selected' : '' }}
+                            >
+                                {{ $dep->nom }}
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <button
+                        class="btn btn-primary"
+                        type="submit"
+                    >
+                        Filtrer
+                    </button>
+
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <a
+                        href="{{ route('achats.index') }}"
+                        class="btn btn-secondary"
+                    >
+                        Réinitialiser
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@endif
 
 {{-- Liste des ventes --}}
 
@@ -515,13 +357,10 @@
                         {{-- UTILISATEUR ADMIN --}}
 
                         @if($estAdmin)
-
                             <td>
-
                                 {{ $vente->nom_utilisateur ?? 'Non renseigné' }}
 
                             </td>
-
                         @endif
 
 
@@ -540,82 +379,43 @@
                                     ) }}"
                                     class="btn btn-sm btn-outline-primary"
                                     title="Voir les détails">
-
                                     <svg
                                         width="13"
                                         height="13"
                                         viewBox="0 0 24 24"
                                         fill="none">
-
                                         <path
                                             d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"
                                             stroke="currentColor"
                                             stroke-width="1.6"/>
-
                                         <circle
                                             cx="12"
                                             cy="12"
                                             r="2.6"
                                             stroke="currentColor"
                                             stroke-width="1.6"/>
-
                                     </svg>
-
                                     Voir plus
-
                                 </a>
-
-
                                 {{-- SUPPRIMER --}}
-
-                                <form
-                                    action="{{ route(
-                                        'ventes.destroy',
-                                        $vente->id_facture
-                                    ) }}"
-                                    method="POST"
-                                    onsubmit="return confirm(
-                                        'Êtes-vous sûr de vouloir supprimer cette vente ?'
-                                    );">
-
+                    <form action="{{ route( 'ventes.destroy', $vente->id_facture) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette vente ?');">
                                     @csrf
-
                                     @method('DELETE')
-
-                                    <button
-                                        type="submit"
-                                        class="btn btn-sm btn-outline-danger"
-                                        title="Supprimer">
-
-                                        <svg
-                                            width="13"
-                                            height="13"
-                                            viewBox="0 0 24 24"
-                                            fill="none">
-
-                                            <path
-                                                d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-8 0 1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"
-                                                stroke="currentColor"
-                                                stroke-width="1.6"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"/>
-
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                                        <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-8 0 1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"
+                                            stroke="currentColor"
+                                            stroke-width="1.6"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"/>
                                         </svg>
-
                                         Supprimer
-
                                     </button>
-
-                                </form>
-
+                    </form>
                             </div>
-
                         </td>
-
                     </tr>
-
                 @empty
-
                     <tr>
 
                         <td

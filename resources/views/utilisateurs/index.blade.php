@@ -100,7 +100,7 @@
                                 @elseif($utilisateur->role === 'caissier')
 
                                     <span class="badge bg-primary">
-                                        Caissier
+                                        Comptable
                                     </span>
 
                                 @elseif($utilisateur->role === 'independant')

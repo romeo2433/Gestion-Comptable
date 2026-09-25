@@ -9,18 +9,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('factures', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_compte_charge')
+            $table->unsignedBigInteger('id_departement')
                 ->nullable()
-                ->change();
+                ->after('id_utilisateur');
+
+            $table->foreign('id_departement')
+                ->references('id_departement')
+                ->on('departements')
+                ->onDelete('set null')
+                ->onUpdate('cascade');
         });
     }
 
     public function down(): void
     {
         Schema::table('factures', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_compte_charge')
-                ->nullable(false)
-                ->change();
+            $table->dropForeign(['id_departement']);
+            $table->dropColumn('id_departement');
         });
     }
 };
