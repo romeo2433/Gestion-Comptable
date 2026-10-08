@@ -38,3 +38,18 @@ Vider la cache
     php artisan optimize:clear
 
 
+
+
+Activation de mysql
+Ouvrez une invite de commande et exécutez la commande suivante : mysqld --skip-grant-tables
+
+
+
+Deposition des Maj dans  Git 
+
+    Une routine plus prudente est donc :
+    
+    git status
+    git add .
+    git commit -m "Ajout de la page profil"
+    git push

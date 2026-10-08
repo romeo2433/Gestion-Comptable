@@ -1,18 +1,12 @@
 @extends('layouts.app')
-
 @section('title', 'Dashboard')
-
 @section('page-title', 'Tableau de bord')
-
 @section('content')
 
 <div class="container-fluid">
 
 
-    {{-- ========================================================= --}}
-    {{-- BIENVENUE --}}
-    {{-- ========================================================= --}}
-
+   
     <div class="card shadow-sm border-0 mb-4">
 
         <div class="card-body py-4">
@@ -128,22 +122,15 @@
                             @endforeach
 
                         </select>
-
                     </div>
-
-
                     <div class="col-md-auto">
-
                         <button
                             type="submit"
                             class="btn btn-primary"
                         >
                             Filtrer
                         </button>
-
                     </div>
-
-
                     @if(!empty($departementSelectionne))
 
                         <div class="col-md-auto">
@@ -154,27 +141,16 @@
                             >
                                 Réinitialiser
                             </a>
-
                         </div>
-
                     @endif
-
                 </form>
-
             </div>
-
         </div>
-
     @endif
-
-
     {{-- ========================================================= --}}
     {{-- STATISTIQUES --}}
     {{-- ========================================================= --}}
-
     <div class="row g-4">
-
-
         {{-- Caissiers --}}
         @if(session('role') === 'admin')
 
@@ -185,7 +161,7 @@
                     <div class="card-body">
 
                         <h6 class="text-muted">
-                            Caissiers
+                            Comptable
                         </h6>
 
                         <h2>

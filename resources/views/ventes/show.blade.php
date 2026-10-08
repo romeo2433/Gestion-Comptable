@@ -464,7 +464,7 @@
 
                         @if($vente->fichier_facture)
 
-                        <a href="{{ route('facture.preview', $vente->id_facture) }}"
+                        <a href="{{ route('ventes.preview', $vente->id_facture) }}"
                             target="_blank"
                             class="btn btn-sm btn-outline-primary">
                          
@@ -499,7 +499,7 @@
                             @if($extension === 'pdf')
 
                             <iframe
-                                src="{{ route('facture.preview', $vente->id_facture) }}"
+                                src="{{ route('ventes.preview', $vente->id_facture) }}"
                                 width="100%"
                                 height="100%"
                                 style="border:none;">

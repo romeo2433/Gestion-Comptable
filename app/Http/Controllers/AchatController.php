@@ -318,20 +318,36 @@ class AchatController extends Controller
      * le compte de charge (numéro + intitulé) selon la nature de la dépense,
      * en s'appuyant sur sa connaissance du Plan Comptable Général.
      */
+    private function modelesGemini(): array
+    {
+        return config('services.gemini.models');
+    }
+    private function erreurTemporaire(\Throwable $e): bool
+    {
+        $msg = strtolower($e->getMessage());
+
+        foreach (['high demand', 'overloaded', 'unavailable', 'resource_exhausted',
+                'quota', 'rate limit', 'try again', 'timed out', 'timeout'] as $mot) {
+            if (str_contains($msg, $mot)) {
+                return true;
+            }
+        }
+
+        return in_array((int) $e->getCode(), [429, 500, 502, 503, 504], true);
+    }
     private function extraireAvecGemini(string $filePath, string $extension): ?array
     {
-        try {
-            $mimeType = match ($extension) {
-                'pdf' => MimeType::APPLICATION_PDF,
-                'png' => MimeType::IMAGE_PNG,
-                'jpg', 'jpeg' => MimeType::IMAGE_JPEG,
-                default => MimeType::APPLICATION_PDF,
-            };
+        $mimeType = match ($extension) {
+            'pdf' => MimeType::APPLICATION_PDF,
+            'png' => MimeType::IMAGE_PNG,
+            'jpg', 'jpeg' => MimeType::IMAGE_JPEG,
+            default => MimeType::APPLICATION_PDF,
+        };
 
-            $fileBlob = new Blob(
-                mimeType: $mimeType,
-                data: base64_encode(file_get_contents($filePath))
-            );
+        $fileBlob = new Blob(
+            mimeType: $mimeType,
+            data: base64_encode(file_get_contents($filePath))
+        );
 
             $prompt = <<<PROMPT
 Tu es un expert comptable spécialisé dans la lecture de factures et le Plan
@@ -399,10 +415,17 @@ Règles pour la TVA :
 10. Le taux, le montant TVA et le compte TVA doivent être cohérents avec la facture.
 PROMPT;
 
-            $response = Gemini::generativeModel(model: 'gemini-3.6-flash')->generateContent([$prompt, $fileBlob]);
-            $jsonText = trim($response->text());
+$tentativesParModele = 2;   // 2 essais par modèle
+$pauseSecondes       = 2;   // 2 s puis 4 s...
 
-            Log::info('Réponse brute Gemini', ['texte' => $jsonText]);
+foreach ($this->modelesGemini() as $modele) {
+    for ($essai = 1; $essai <= $tentativesParModele; $essai++) {
+        try {
+            $response = Gemini::generativeModel(model: $modele)
+                ->generateContent([$prompt, $fileBlob]);
+
+            $jsonText = trim($response->text());
+            Log::info('Réponse brute Gemini', ['modele' => $modele, 'texte' => $jsonText]);
 
             // Nettoyage au cas où Gemini ajoute des balises Markdown
             $jsonText = preg_replace('/^```json\s*/i', '', $jsonText);
@@ -415,14 +438,31 @@ PROMPT;
                 return $data;
             }
 
-            Log::error('Gemini réponse non JSON valide : ' . $jsonText);
-            return null;
+            // Réponse reçue mais JSON invalide : on réessaie une fois,
+            // puis on passe au modèle suivant.
+            Log::error("Gemini ($modele) réponse non JSON valide : " . $jsonText);
+            continue;
 
-        } catch (\Exception $e) {
-            Log::error('Erreur Gemini API : ' . $e->getMessage());
-            return null;
+        } catch (\Throwable $e) {
+            Log::error("Erreur Gemini API ($modele, essai $essai) : " . $e->getMessage());
+
+            if (!$this->erreurTemporaire($e)) {
+                // Erreur définitive (clé invalide, modèle inexistant, fichier refusé...) :
+                // inutile de réessayer ce modèle.
+                break;
+            }
+
+            if ($essai < $tentativesParModele) {
+                sleep($pauseSecondes * $essai);
+            }
         }
     }
+
+    Log::warning("Gemini : modèle $modele indisponible, passage au suivant.");
+}
+
+return null;
+}
 
     /**
      * Enregistrer en base de données les éléments retournés par Gemini.

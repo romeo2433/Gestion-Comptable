@@ -34,5 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    
+    'gemini' => [
+        'models' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', env('GEMINI_MODELS', 'gemini-3.6-flash,gemini-2.5-flash,gemini-2.5-flash-lite'))
+        ))),
+    ],
 
 ];

@@ -317,106 +317,209 @@ class VenteController extends Controller
      * le compte de produit (numéro + intitulé) selon la nature de la vente,
      * en s'appuyant sur sa connaissance du Plan Comptable Général.
      */
+
+    private function modelesGemini(): array
+    {
+        return config('services.gemini.models');
+    }
+
+    private function erreurTemporaire(\Throwable $e): bool
+    {
+        $msg = strtolower($e->getMessage());
+
+        foreach ([
+            'high demand','overloaded','unavailable','resource_exhausted','quota','rate limit','try again','timed out','timeout'
+] as $mot) {
+            if (str_contains($msg, $mot)) {
+                return true;
+            }
+        }
+
+        return in_array(
+            (int) $e->getCode(),
+            [429, 500, 502, 503, 504],
+            true
+        );
+    }
     private function extraireAvecGemini(string $filePath, string $extension): ?array
     {
-        try {
-            $mimeType = match ($extension) {
-                'pdf' => MimeType::APPLICATION_PDF,
-                'png' => MimeType::IMAGE_PNG,
-                'jpg', 'jpeg' => MimeType::IMAGE_JPEG,
-                default => MimeType::APPLICATION_PDF,
-            };
-
-            $fileBlob = new Blob(
-                mimeType: $mimeType,
-                data: base64_encode(file_get_contents($filePath))
-            );
-
-            $prompt = <<<PROMPT
-Tu es un expert comptable spécialisé dans la lecture de factures et le Plan
-Comptable Général (PCG) malgache.
-
-Analyse le document joint et extrait rigoureusement les informations sous la forme d'un objet JSON STRICT respectant exactement cette structure :
-
-{
-  "client": "Nom de l'entreprise ou de la personne à qui la facture est adressée (généralement introduit par 'Doit à', 'Facturé à' ou similaire). Attention : ne pas confondre avec l'émetteur de la facture (notre propre entreprise), qui figure en en-tête/logo.",
-  "numero_facture": "Numéro unique de la facture",
-  "date_facture": "Date d'émission au format YYYY-MM-DD",
-  "date_echeance": "Date limite de paiement au format YYYY-MM-DD ou null",
-  "montant_ht": 0.00,
-  "montant_tva": 0.00,
-  "montant_ttc": 0.00,
-  "tva_taux": 0.00,
-  "tva_type": "TVA collectée",
-  "compte_tva_numero": "443000",
-  "compte_tva_intitule": "TVA collectée",
-  "compte_tva_confiance": "haute",
-  "compte_produit_numero": "Le numéro de compte du PCG (classe 7, ex: 701, 706, 707) le plus pertinent pour cette vente",
-  "compte_produit_intitule": "L'intitulé standard du PCG correspondant à ce numéro (ex: 'Ventes de marchandises')",
-  "compte_produit_confiance": "haute, moyenne ou basse — ton niveau de certitude sur ce choix de compte",
-  "produits": [
-    {
-      "designation": "Nom du produit ou description de la prestation",
-      "quantite": 1,
-      "prix_unitaire": 0.00,
-      "montant": 0.00
-    }
-  ]
-}
-
-Règles importantes pour compte_produit_numero / compte_produit_intitule :
-1. Utilise EXACTEMENT la nomenclature standard du PCG (classe 7 = produits).
-   Exemples courants : 701 Ventes de produits finis, 702 Ventes de produits
-   intermédiaires, 706 Prestations de services, 707 Ventes de marchandises,
-   708 Produits des activités annexes.
-2. Utilise toujours le même numéro et le même intitulé (mot pour mot) pour
-   une même nature de vente, afin de ne pas créer de doublons.
-3. Si tu n'arrives vraiment pas à déterminer un compte pertinent, mets
-   compte_produit_numero et compte_produit_intitule à null.
-
-Autres règles :
-1. Réponds UNIQUEMENT le JSON brut sans balises Markdown (ex: pas de ```json ... ```).
-2. Pour les montants, utilise des nombres décimaux avec un point (ex: 150.50).
-3. Si un champ n'est pas présent ou incertain, mets null.
-
-Règles pour la TVA :
-
-1. Identifie le taux de TVA indiqué sur la facture.
-2. Identifie le montant total de TVA.
-3. Détermine le type de TVA applicable à cette facture.
-4. Détermine le compte comptable correspondant à la TVA.
-5. Pour une facture de vente, la TVA est généralement une TVA collectée
-   (due à l'État), à ne pas confondre avec la TVA déductible des achats.
-6. Donne le numéro et l'intitulé du compte TVA correspondant.
-7. Le compte TVA doit être cohérent avec le plan comptable utilisé dans l'application.
-8. Si le compte TVA ne peut pas être déterminé avec suffisamment de certitude, retourne null.
-9. Ne crée jamais un numéro de compte arbitraire simplement pour remplir le champ.
-10. Le taux, le montant TVA et le compte TVA doivent être cohérents avec la facture.
-PROMPT;
-
-            $response = Gemini::generativeModel(model: 'gemini-3.6-flash')->generateContent([$prompt, $fileBlob]);
-            $jsonText = trim($response->text());
-
-            Log::info('Réponse brute Gemini', ['texte' => $jsonText]);
-
-            // Nettoyage au cas où Gemini ajoute des balises Markdown
-            $jsonText = preg_replace('/^```json\s*/i', '', $jsonText);
-            $jsonText = preg_replace('/^```\s*/i', '', $jsonText);
-            $jsonText = preg_replace('/\s*```$/i', '', $jsonText);
-
-            $data = json_decode(trim($jsonText), true);
-
-            if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
-                return $data;
-            }
-
-            Log::error('Gemini réponse non JSON valide : ' . $jsonText);
-            return null;
-
-        } catch (\Exception $e) {
-            Log::error('Erreur Gemini API : ' . $e->getMessage());
+        $mimeType = match ($extension) {
+            'pdf' => MimeType::APPLICATION_PDF,
+            'png' => MimeType::IMAGE_PNG,
+            'jpg', 'jpeg' => MimeType::IMAGE_JPEG,
+            default => MimeType::APPLICATION_PDF,
+        };
+    
+        $contenu = file_get_contents($filePath);
+    
+        if ($contenu === false) {
+            Log::error('Impossible de lire le fichier avant envoi à Gemini.');
             return null;
         }
+    
+        $fileBlob = new Blob(
+            mimeType: $mimeType,
+            data: base64_encode($contenu)
+        );
+    
+        $prompt = <<<PROMPT
+        Tu es un expert comptable spécialisé dans la lecture de factures et le Plan
+        Comptable Général (PCG) malgache.
+        
+        Analyse le document joint et extrait rigoureusement les informations sous la forme d'un objet JSON STRICT respectant exactement cette structure :
+        
+        {
+          "client": "Nom de l'entreprise ou de la personne à qui la facture est adressée (généralement introduit par 'Doit à', 'Facturé à' ou similaire). Attention : ne pas confondre avec l'émetteur de la facture (notre propre entreprise), qui figure en en-tête/logo.",
+          "numero_facture": "Numéro unique de la facture",
+          "date_facture": "Date d'émission au format YYYY-MM-DD",
+          "date_echeance": "Date limite de paiement au format YYYY-MM-DD ou null",
+          "montant_ht": 0.00,
+          "montant_tva": 0.00,
+          "montant_ttc": 0.00,
+          "tva_taux": 0.00,
+          "tva_type": "TVA collectée",
+          "compte_tva_numero": "443000",
+          "compte_tva_intitule": "TVA collectée",
+          "compte_tva_confiance": "haute",
+          "compte_produit_numero": "Le numéro de compte du PCG (classe 7, ex: 701, 706, 707) le plus pertinent pour cette vente",
+          "compte_produit_intitule": "L'intitulé standard du PCG correspondant à ce numéro (ex: 'Ventes de marchandises')",
+          "compte_produit_confiance": "haute, moyenne ou basse — ton niveau de certitude sur ce choix de compte",
+          "produits": [
+            {
+              "designation": "Nom du produit ou description de la prestation",
+              "quantite": 1,
+              "prix_unitaire": 0.00,
+              "montant": 0.00
+            }
+          ]
+        }
+        
+        Règles importantes pour compte_produit_numero / compte_produit_intitule :
+        1. Utilise EXACTEMENT la nomenclature standard du PCG (classe 7 = produits).
+           Exemples courants : 701 Ventes de produits finis, 702 Ventes de produits
+           intermédiaires, 706 Prestations de services, 707 Ventes de marchandises,
+           708 Produits des activités annexes.
+        2. Utilise toujours le même numéro et le même intitulé (mot pour mot) pour
+           une même nature de vente, afin de ne pas créer de doublons.
+        3. Si tu n'arrives vraiment pas à déterminer un compte pertinent, mets
+           compte_produit_numero et compte_produit_intitule à null.
+        
+        Autres règles :
+        1. Réponds UNIQUEMENT le JSON brut sans balises Markdown (ex: pas de ```json ... ```).
+        2. Pour les montants, utilise des nombres décimaux avec un point (ex: 150.50).
+        3. Si un champ n'est pas présent ou incertain, mets null.
+        
+        Règles pour la TVA :
+        
+        1. Identifie le taux de TVA indiqué sur la facture.
+        2. Identifie le montant total de TVA.
+        3. Détermine le type de TVA applicable à cette facture.
+        4. Détermine le compte comptable correspondant à la TVA.
+        5. Pour une facture de vente, la TVA est généralement une TVA collectée
+           (due à l'État), à ne pas confondre avec la TVA déductible des achats.
+        6. Donne le numéro et l'intitulé du compte TVA correspondant.
+        7. Le compte TVA doit être cohérent avec le plan comptable utilisé dans l'application.
+        8. Si le compte TVA ne peut pas être déterminé avec suffisamment de certitude, retourne null.
+        9. Ne crée jamais un numéro de compte arbitraire simplement pour remplir le champ.
+        10. Le taux, le montant TVA et le compte TVA doivent être cohérents avec la facture.
+        PROMPT;
+    
+        $tentativesParModele = 2;
+        $pauseSecondes = 2;
+    
+        foreach ($this->modelesGemini() as $modele) {
+    
+            for ($essai = 1; $essai <= $tentativesParModele; $essai++) {
+    
+                try {
+    
+                    Log::info(
+                        "Gemini vente : tentative",
+                        [
+                            'modele' => $modele,
+                            'essai' => $essai
+                        ]
+                    );
+    
+                    $response = Gemini::generativeModel(
+                        model: $modele
+                    )->generateContent([
+                        $prompt,
+                        $fileBlob
+                    ]);
+    
+                    $jsonText = trim($response->text());
+    
+                    Log::info(
+                        'Réponse brute Gemini vente',
+                        [
+                            'modele' => $modele,
+                            'texte' => $jsonText
+                        ]
+                    );
+    
+                    // Nettoyage Markdown
+                    $jsonText = preg_replace(
+                        '/^```json\s*/i',
+                        '',
+                        $jsonText
+                    );
+    
+                    $jsonText = preg_replace(
+                        '/^```\s*/i',
+                        '',
+                        $jsonText
+                    );
+    
+                    $jsonText = preg_replace(
+                        '/\s*```$/i',
+                        '',
+                        $jsonText
+                    );
+    
+                    $data = json_decode(
+                        trim($jsonText),
+                        true
+                    );
+    
+                    if (
+                        json_last_error() === JSON_ERROR_NONE
+                        && is_array($data)
+                    ) {
+                        return $data;
+                    }
+    
+                    Log::error(
+                        "Gemini vente ($modele) : réponse JSON invalide"
+                    );
+    
+                } catch (\Throwable $e) {
+    
+                    Log::error(
+                        "Erreur Gemini vente ($modele, essai $essai) : "
+                        . $e->getMessage()
+                    );
+    
+                    // Erreur définitive :
+                    // on ne retente pas inutilement.
+                    if (!$this->erreurTemporaire($e)) {
+                        break;
+                    }
+    
+                    // Erreur temporaire :
+                    // on retente.
+                    if ($essai < $tentativesParModele) {
+                        sleep($pauseSecondes * $essai);
+                    }
+                }
+            }
+    
+            Log::warning(
+                "Gemini vente : modèle $modele indisponible, passage au suivant."
+            );
+        }
+    
+        return null;
     }
 
     /**
@@ -789,9 +892,25 @@ PROMPT;
 
     public function preview($id)
     {
-        $vente = DB::table('factures')
-            ->where('id_facture', $id)
-            ->where('type', 'vente')
+        $idUtilisateur = session('id_utilisateur');
+    
+        if (!$idUtilisateur) {
+            abort(403);
+        }
+    
+        $vente = DB::table('factures as f')
+            ->leftJoin('utilisateurs as u', 'f.id_utilisateur', '=', 'u.id_utilisateur')
+            ->where('f.id_facture', $id)
+            ->where('f.type', 'vente')
+            ->when(
+                session('role') === 'admin',
+                fn ($q) => $q->where(
+                    fn ($q2) => $q2->where('u.role', '!=', 'independant')
+                                   ->orWhereNull('u.role')
+                ),
+                fn ($q) => $q->where('f.id_utilisateur', $idUtilisateur)
+            )
+            ->select('f.*')
             ->first();
     
         if (!$vente) {
@@ -802,12 +921,10 @@ PROMPT;
             abort(404, 'Aucun fichier associé');
         }
     
-        $path = storage_path(
-            'app/public/' . $vente->fichier_facture
-        );
+        $path = storage_path('app/public/' . $vente->fichier_facture);
     
         if (!file_exists($path)) {
-            abort(404, 'Fichier introuvable : ' . $path);
+            abort(404, 'Fichier introuvable');
         }
     
         return response()->file($path);
