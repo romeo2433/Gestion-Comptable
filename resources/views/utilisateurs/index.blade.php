@@ -57,6 +57,10 @@
         </div>
     </div>
     {{-- Tableau --}}
+@php
+    $departements = DB::table('departements')
+        ->pluck('nom', 'id_departement');
+@endphp
     <div class="card shadow-sm border-0">
         <div class="card-body">
             <div class="table-responsive">
@@ -66,8 +70,9 @@
                             <th>Nom</th>
                             <th>Email</th>
                             <th>Rôle</th>
+                            <th>Département</th>
                             <th>Statut</th>
-                            <th>Créé le</th>
+                           {{-- <th>Créé le</th> --}}
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -112,7 +117,21 @@
                                 @endif
 
                             </td>
+                            {{-- Département --}}
+                            <td>
+                                @if($utilisateur->role === 'independant')
+                                    <span class="text-muted">—</span>
+                                @elseif($utilisateur->id_departement
+                                    && isset($departements[$utilisateur->id_departement]))
 
+                                    <span class="badge bg-info text-dark">
+                                        {{ $departements[$utilisateur->id_departement] }}
+                                    </span>
+
+                                @else
+                                    <span class="text-muted">Non attribué</span>
+                                @endif
+                            </td>
 
                             {{-- Statut --}}
                             <td>
@@ -132,14 +151,39 @@
                                 @endif
 
                             </td>
+                            <td>
+                                
+
+                                @if($utilisateur->role === 'caissier' && session('role') === 'admin')
+
+                                <a href="{{ route('achats.index', [
+                                    'utilisateur' => $utilisateur->id_utilisateur
+                                ]) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-receipt"></i>
+                                    Voir les achats
+                                </a>
+                            
+                                <a href="{{ route('ventes.index', [
+                                    'utilisateur' => $utilisateur->id_utilisateur
+                                ]) }}"
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-cart"></i>
+                                    Voir les ventes
+                                </a>
+                            
+                            @endif
+                            
+
+                            </td>
 
 
-                            {{-- Date --}}
+                            {{-- Date 
                             <td>
 
                                 {{ \Carbon\Carbon::parse($utilisateur->created_at)->format('d/m/Y') }}
 
-                            </td>
+                            </td>--}}
 
 
                             {{-- Actions --}}

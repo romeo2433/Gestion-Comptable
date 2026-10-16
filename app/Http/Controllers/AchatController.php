@@ -26,6 +26,7 @@ class AchatController extends Controller
         }
          // Filtre département
         $departementSelectionne = request('departement');
+        $utilisateurSelectionne = request('utilisateur');
 
         $query = DB::table('factures as f')
             ->leftJoin(
@@ -113,18 +114,28 @@ class AchatController extends Controller
             // CAISSIER   : voit uniquement ses propres factures
             // INDEPENDANT: voit uniquement ses propres factures
             //              (personne d'autre, admin y compris, ne les voit)
+           
+
             ->when(
                 $role === 'admin',
-                function ($query) use ($departementSelectionne) {
+                function ($query) use (
+                    $departementSelectionne,
+                    $utilisateurSelectionne
+                ) {
+                    if (!empty($utilisateurSelectionne)) {
+                        // L'admin consulte les achats d'un caissier précis
+                        $query->where('f.id_utilisateur', $utilisateurSelectionne)
+                              ->where('u.role', 'caissier');
+                    } else {
+                        // Comportement actuel : exclure les indépendants
+                        $query->where(function ($q) {
+                            $q->where('u.role', '!=', 'independant')
+                              ->orWhereNull('u.role');
+                        });
+                    }
             
-                    $query->where(function ($q) {
-                        $q->where('u.role', '!=', 'independant')
-                          ->orWhereNull('u.role');
-                    });
-            
-                    // Filtre département
+                    // Conserver le filtre département
                     if (!empty($departementSelectionne)) {
-            
                         $query->where(
                             'f.id_departement',
                             $departementSelectionne
@@ -132,12 +143,11 @@ class AchatController extends Controller
                     }
                 },
                 function ($query) use ($idUtilisateur) {
-                    $query->where(
-                        'f.id_utilisateur',
-                        $idUtilisateur
-                    );
+                    // Caissier et indépendant : leurs propres factures uniquement
+                    $query->where('f.id_utilisateur', $idUtilisateur);
                 }
             )
+            
 
             ->groupBy(
                 'f.id_facture',
@@ -171,7 +181,8 @@ class AchatController extends Controller
             compact(
                 'achats',
                 'departements',
-                'departementSelectionne'
+                'departementSelectionne',
+                'utilisateurSelectionne'
             )
         );
     }

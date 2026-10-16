@@ -11,14 +11,16 @@ class UtilisateurController extends Controller
     /**
      * Afficher la liste des utilisateurs
      */
+   
     public function index()
-    {
-        $utilisateurs = DB::table('utilisateurs')
-            ->orderBy('nom')
-            ->get();
+     {
+         $utilisateurs = DB::table('utilisateurs')
+             ->orderBy('nom')
+             ->get();
+     
+         return view('utilisateurs.index', compact('utilisateurs'));
+     }
 
-        return view('utilisateurs.index', compact('utilisateurs'));
-    }
 
 
     /**
