@@ -127,7 +127,7 @@
                 <div class="col-md-4">
 
                     <label class="form-label">
-                        Département
+                        Client
                     </label>
 
                     <select
@@ -136,7 +136,7 @@
                     >
 
                         <option value="">
-                            Tous les départements
+                            Tous les clients
                         </option>
 
                         @foreach($departements as $dep)

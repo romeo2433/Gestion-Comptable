@@ -59,7 +59,7 @@
                     <div>
 
                         <h5 class="mb-1">
-                            Filtrer par département
+                            Filtrer par Client
                         </h5>
 
                         <p class="text-muted mb-0">
@@ -77,7 +77,7 @@
                     @else
 
                         <span class="badge bg-secondary">
-                            Tous les départements
+                            Tous les Clients
                         </span>
 
                     @endif
@@ -97,7 +97,7 @@
                             for="departement"
                             class="form-label"
                         >
-                            Département
+                            Clients
                         </label>
 
                         <select
@@ -107,7 +107,7 @@
                         >
 
                             <option value="">
-                                Tous les départements
+                                Tous les Clients
                             </option>
 
                             @foreach($departements as $departement)
@@ -204,6 +204,15 @@
 
                     <h2>
                         {{ $nombreFacturesVente }}
+                        <div class="mt-3">
+                            <a href="{{ route('ventes.index', [
+                                'departement' => $departementSelectionne
+                            ]) }}"
+                               class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-arrow-right-circle"></i>
+                                Voir les ventes
+                            </a>
+                        </div>
                     </h2>
 
                     <small class="text-muted">
@@ -240,6 +249,15 @@
 
                     <h2>
                         {{ $nombreFacturesAchat }}
+                        <div class="mt-3">
+                            <a href="{{ route('achats.index', [
+                                'departement' => $departementSelectionne
+                            ]) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-right-circle"></i>
+                                Voir les achats
+                            </a>
+                        </div>
                     </h2>
 
                     <small class="text-muted">
@@ -333,6 +351,46 @@
         </div>
 
     @endif
+
+
+    
+    {{-- Total des factures --}}
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="text-muted">
+                    Total des factures
+                </h6>
+
+                <h2>{{ $nombreFacturesTotal }}</h2>
+
+                <small class="text-muted">
+                    @if($nomDepartementSelectionne)
+                        {{ $nomDepartementSelectionne }}
+                    @else
+                        Tous les départements
+                    @endif
+                </small>
+
+                <div class="mt-3 d-flex gap-2 flex-wrap">
+                    <a href="{{ route('achats.index', [
+                        'departement' => $departementSelectionne
+                    ]) }}"
+                    class="btn btn-sm btn-outline-primary">
+                        Achats
+                    </a>
+
+                    <a href="{{ route('ventes.index', [
+                        'departement' => $departementSelectionne
+                    ]) }}"
+                    class="btn btn-sm btn-outline-success">
+                        Ventes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
     {{-- ========================================================= --}}

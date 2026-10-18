@@ -50,7 +50,8 @@ class DashboardController extends Controller
         if ($role === 'admin') {
 
             $requeteCaissiers = DB::table('utilisateurs as u')
-                ->where('u.role', 'caissier');
+            ->where('u.role', 'caissier')
+            ->where('u.statut', 'actif');
 
             /*
             | Filtre département
@@ -109,7 +110,7 @@ class DashboardController extends Controller
             if (!empty($departementSelectionne)) {
 
                 $facturesBase->where(
-                    'u.id_departement',
+                    'f.id_departement',
                     $departementSelectionne
                 );
             }
@@ -148,6 +149,10 @@ class DashboardController extends Controller
         $nombreFacturesAchat = (clone $facturesBase)
             ->where('f.type', 'achat')
             ->count();
+
+
+        $nombreFacturesTotal =
+        $nombreFacturesAchat + $nombreFacturesVente;
 
 
         /*
@@ -516,6 +521,8 @@ class DashboardController extends Controller
                 'departements',
 
                 'departementSelectionne',
+
+                'nombreFacturesTotal',
 
                 'nomDepartementSelectionne'
             )
